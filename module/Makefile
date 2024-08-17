@@ -1,9 +1,13 @@
+# https://www.kernel.org/doc/html/latest/kbuild/
+
 KDIR ?= /lib/modules/$(shell uname -r)/build
 
 SOURCEDIR = $(CURDIR)/source
 BUILDDIR = $(CURDIR)/build
 
-.PHONY: all clean
+MODULE = trfs
+
+.PHONY: all clean modinfo install uninstall
 
 # M/KBUILD_EXTMOD (https://docs.kernel.org/kbuild/kbuild.html)
 # Set the directory to look for the kernel source when building external modules.
@@ -17,3 +21,12 @@ all:
 
 clean:
 	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCEDIR) clean
+
+modinfo:
+	modinfo $(BUILDDIR)/$(MODULE).ko
+
+install:
+	insmod $(BUILDDIR)/$(MODULE).ko
+
+uninstall:
+	rmmod $(MODULE)

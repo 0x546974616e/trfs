@@ -116,7 +116,7 @@ deb-src http://deb.debian.org/debian bookworm-updates main
 
 ```sh
 qemu-system-x86_64 \
-  -hda debian.qcow -m 512 \
+  -hda debian.qcow -m size=512M \
   -enable-kvm -display default,show-cursor=on \
   -virtfs local,path=./shared,readonly=on,mount_tag=shared0,id=shared0,security_model=mapped
 ```

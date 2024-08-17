@@ -18,6 +18,7 @@ VIRTFS += id=shared0
 
 qemu:
 	/usr/bin/qemu-system-x86_64 \
-		-hda debian.qcow -m 512 -enable-kvm \
+		-hda $(CURDIR)/image/debian.qcow \
 		-virtfs $(call JOIN,$(VIRTFS),$(COMMA)) \
-		-display default,show-cursor=on
+		-display default,show-cursor=on \
+		-m size=512M -enable-kvm
