@@ -1,3 +1,4 @@
+#include <linux/minmax.h>
 #include <linux/proc_fs.h>
 #include <linux/version.h>
 
@@ -29,7 +30,7 @@ static ssize_t trfs_procfs_read(
     return 0;
   }
 
-  size_t actual_length = min(
+  size_t const actual_length = min(
     // The (size_t*) cast should be safe here (isn't it?).
     trfs_procfs_buffer_size - *(size_t*)file_offset,
     user_buffer_length // Should not be zero?
@@ -59,6 +60,7 @@ static ssize_t trfs_procfs_read(
 // echo -ne '\x00' > /proc/trfs
 // printf '\x00' > /proc/trfs
 // echo -n dadafafa | dd of=/proc/trfs bs=1 seek=4
+// strace dd if=/proc/trfs bs=1 skip=11 count=4
 // cat /proc/trfs | hexdump -C
 static ssize_t trfs_procfs_write(
   struct file* const file,
@@ -78,7 +80,7 @@ static ssize_t trfs_procfs_write(
     return -EFBIG;
   }
 
-  size_t actual_length = min(
+  size_t const actual_length = min(
     // The (size_t*) cast should be safe here (right?).
     TRFS_PROCFS_BUFFER_SIZE - *(size_t*)file_offset,
     user_buffer_length // Should be non-zero?
@@ -117,11 +119,16 @@ static ssize_t trfs_procfs_write(
   }
 #endif
 
-static struct proc_dir_entry* trfs_procfs_entry;
+static struct proc_dir_entry* trfs_procfs_entry = NULL;
 static char const* const TRFS_PROCFS_NAME = "trfs";
 
 int __init trfs_procfs_init(void) {
   pr_info("TRFS(procfs) init\n");
+
+  if (trfs_procfs_entry != NULL) {
+    // Should not happen.
+    return 0;
+  }
 
   trfs_procfs_entry = proc_create(
     TRFS_PROCFS_NAME, 0666, NULL, // See proc_mkdir().

@@ -2,10 +2,14 @@
 
 #include "printk.h"
 #include "procfs.h"
+#include "sysfs.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Titan 0x546974616e");
 MODULE_DESCRIPTION("A simple file system for educational purposes");
+
+static int __init trfs_init(void);
+static void __exit trfs_exit(void);
 
 // The __init macro causes init functions to be freed once invoked for built-in
 // drivers (in-tree build + built-in module), but not loadable modules (in-tree
@@ -27,12 +31,22 @@ MODULE_DESCRIPTION("A simple file system for educational purposes");
 
 static int __init trfs_init(void) {
   pr_info("TRFS(main) init\n");
-  return trfs_procfs_init();
+
+  int error;
+  if ((error = trfs_procfs_init())) goto cleanup;
+  if ((error = trfs_sysfs_init())) goto cleanup;
+  return 0; // Success
+
+cleanup:
+  trfs_exit();
+  return error;
 }
 
+// Expect cleanup functions to be robust.
 static void __exit trfs_exit(void) {
   pr_info("TRFS(main) exit\n");
   trfs_procfs_exit();
+  trfs_sysfs_exit();
 }
 
 module_init(trfs_init);
