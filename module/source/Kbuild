@@ -1,2 +1,2 @@
 obj-m += trfs.o
-trfs-objs := hello.o
+trfs-objs := main.o procfs.o
