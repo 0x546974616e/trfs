@@ -18,7 +18,7 @@ CFLAGS = \
 
 CDEPS = -MMD -MP -MT $@ -MF $(@:.o=.d)
 
-LDFLAGS =
+LDFLAGS = -lm
 
 .PHONY : all clean cleanall mrproper
 

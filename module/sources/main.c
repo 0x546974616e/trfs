@@ -3,9 +3,9 @@
 #include "printk.h"
 #include "procfs.h"
 
-MODULE_DESCRIPTION("A simple file system for educational purposes");
-MODULE_AUTHOR("Titan 0x546974616e");
 MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Titan 0x546974616e");
+MODULE_DESCRIPTION("A simple file system for educational purposes");
 
 // The __init macro causes init functions to be freed once invoked for built-in
 // drivers (in-tree build + built-in module), but not loadable modules (in-tree

@@ -8,10 +8,11 @@
 // https://linux-kernel-labs.github.io/refs/heads/master/labs/device_drivers.html
 
 #define TRFS_PROCFS_BUFFER_SIZE 128u
-#define TRFS_PROCFS_INITIAL "Hello TRFS!"
+#define TRFS_PROCFS_INITIAL "Hello from TRFS!"
 static char trfs_procfs_buffer[TRFS_PROCFS_BUFFER_SIZE] = TRFS_PROCFS_INITIAL;
 static size_t trfs_procfs_buffer_size = sizeof(TRFS_PROCFS_INITIAL) - 1;
 
+// TODO: Try seq_file
 static ssize_t trfs_procfs_read(
   struct file* const file,
   char __user* const user_buffer,
@@ -55,6 +56,10 @@ static ssize_t trfs_procfs_read(
 // echo -n > /proc/trfs
 // echo -n dada > /proc/trfs
 // echo 00 | xxd -p -r > /proc/trfs
+// echo -ne '\x00' > /proc/trfs
+// printf '\x00' > /proc/trfs
+// echo -n dadafafa | dd of=/proc/trfs bs=1 seek=4
+// cat /proc/trfs | hexdump -C
 static ssize_t trfs_procfs_write(
   struct file* const file,
   char __user const* const user_buffer,
