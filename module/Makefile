@@ -2,7 +2,7 @@
 
 KDIR ?= /lib/modules/$(shell uname -r)/build
 
-SOURCEDIR = $(CURDIR)/source
+SOURCESDIR = $(CURDIR)/sources
 BUILDDIR = $(CURDIR)/build
 
 MODULE = trfs
@@ -17,10 +17,10 @@ MODULE = trfs
 # referring to files located in the src tree.
 
 all:
-	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCEDIR) modules
+	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCESDIR) modules
 
 clean:
-	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCEDIR) clean
+	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCESDIR) clean
 
 modinfo:
 	modinfo $(BUILDDIR)/$(MODULE).ko

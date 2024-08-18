@@ -52,6 +52,9 @@ static ssize_t trfs_procfs_read(
   return actual_length;
 }
 
+// echo -n > /proc/trfs
+// echo -n dada > /proc/trfs
+// echo 00 | xxd -p -r > /proc/trfs
 static ssize_t trfs_procfs_write(
   struct file* const file,
   char __user const* const user_buffer,
@@ -67,7 +70,7 @@ static ssize_t trfs_procfs_write(
   if (*file_offset >= TRFS_PROCFS_BUFFER_SIZE) {
     // There is an infinite loop when returning 0.
     // I would like to RTFM but where to fint it?
-    return -EINVAL;
+    return -EFBIG;
   }
 
   size_t actual_length = min(
@@ -124,6 +127,10 @@ int __init trfs_procfs_init(void) {
     pr_err("Could not initialize /proc/%s\n", TRFS_PROCFS_NAME);
     return -ENOMEM;
   }
+
+  // Only for educational purposes.
+  proc_set_size(trfs_procfs_entry, TRFS_PROCFS_BUFFER_SIZE);
+  proc_set_user(trfs_procfs_entry, GLOBAL_ROOT_UID, GLOBAL_ROOT_GID);
 
   pr_info("/proc/%s created\n", TRFS_PROCFS_NAME);
   return 0;
