@@ -28,8 +28,8 @@ static ssize_t trfs_sysfs_dada_show(
   struct kobj_attribute* const attribute,
   char* const buffer
 ) {
-// container_of(pointer, object type, member)
-// Given the address of object.member (pointer), return the address of object.
+  // container_of(pointer, object type, member).
+  // Given the address of object.member (pointer), return the address of object.
   struct trfs_sysfs_data* const data = container_of(
     kobject, struct trfs_sysfs_data, trfs_kobject
   );
@@ -46,6 +46,10 @@ static ssize_t trfs_sysfs_dada_store(
   char const* const buffer,
   size_t count
 ) {
+  // Given the sample structure, the two below statements are equivalents:
+  // | struct sample { int mem1; char mem2; int mem3; }
+  // | 1. struct sample* pointer = &sample1;
+  // | 2. struct sample* pointer = container_of(&sample1.mem3, struct sample, mem3);
   struct trfs_sysfs_data* const data = container_of(
     kobject, struct trfs_sysfs_data, trfs_kobject
   );
@@ -62,6 +66,33 @@ static ssize_t trfs_sysfs_dada_store(
 // ╠╣ ├─┤├┤ ├─┤
 // ╚  ┴ ┴└  ┴ ┴
 
+static ssize_t trfs_sysfs_fafa_show(
+  struct kobject* const kobject,
+  struct kobj_attribute* const attribute,
+  char* const buffer
+) {
+  struct trfs_sysfs_data* const data = container_of(
+    kobject, struct trfs_sysfs_data, trfs_kobject
+  );
+
+  return sysfs_emit(buffer, "%d\n", data->fafa);
+}
+
+static ssize_t trfs_sysfs_fafa_store(
+  struct kobject* const kobject,
+  struct kobj_attribute* const attribute,
+  char const* const buffer,
+  size_t count
+) {
+  struct trfs_sysfs_data* const data = container_of(
+    kobject, struct trfs_sysfs_data, trfs_kobject
+  );
+
+  // TODO: Ensure that the buffer is null-terminated (man kstrtoint).
+  int error = kstrtoint(buffer, 10, &data->fafa);
+  return error < 0 ? error : count;
+}
+
 // ╔═╗┬ ┬┌─┐┌─┐┌─┐
 // ╚═╗└┬┘└─┐├┤ └─┐
 // ╚═╝ ┴ └─┘└  └─┘
@@ -70,8 +101,13 @@ static struct kobj_attribute trfs_sysfs_dada_attribute = __ATTR(
   dada, 0664, trfs_sysfs_dada_show, trfs_sysfs_dada_store
 );
 
+static struct kobj_attribute trfs_sysfs_fafa_attribute = __ATTR(
+  fafa, 0664, trfs_sysfs_fafa_show, trfs_sysfs_fafa_store
+);
+
 static struct attribute* trfs_sysfs_attributes[] = {
   &trfs_sysfs_dada_attribute.attr,
+  &trfs_sysfs_fafa_attribute.attr,
   NULL,
 };
 
@@ -112,6 +148,7 @@ int __init trfs_sysfs_init(void) {
   size_t const length = min_t(size_t, sizeof(TRFS_SYSFS_DADA_INITIAL), TRFS_SYSFS_DADA_SIZE) - 1u;
   strncpy(trfs_sysfs_data->dada, TRFS_SYSFS_DADA_INITIAL, length);
   trfs_sysfs_data->dada[length] = 0x0;
+  trfs_sysfs_data->fafa = 220; // Amicable number with 284.
 
   // Create the kobject at /sys/kernel/trfs.
   // https://docs.kernel.org/core-api/kobject.html#initialization-of-kobjects
