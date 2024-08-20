@@ -1,5 +1,6 @@
 #include <linux/module.h>
 
+#include "impl.h"
 #include "printk.h"
 #include "procfs.h"
 #include "sysfs.h"
@@ -33,6 +34,7 @@ static int __init trfs_init(void) {
   pr_info("TRFS(main) init\n");
 
   int error;
+  if ((error = trfs_impl_init())) goto cleanup;
   if ((error = trfs_procfs_init())) goto cleanup;
   if ((error = trfs_sysfs_init())) goto cleanup;
   return 0; // Success
@@ -45,6 +47,8 @@ cleanup:
 // Expect cleanup functions to be robust.
 static void __exit trfs_exit(void) {
   pr_info("TRFS(main) exit\n");
+
+  trfs_impl_exit();
   trfs_procfs_exit();
   trfs_sysfs_exit();
 }

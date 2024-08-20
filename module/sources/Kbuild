@@ -1,2 +1,2 @@
 obj-m += trfs.o
-trfs-objs := main.o procfs.o sysfs.o
+trfs-objs := main.o procfs.o sysfs.o impl.o

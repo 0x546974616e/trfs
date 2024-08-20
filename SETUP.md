@@ -124,10 +124,11 @@ qemu-system-x86_64 \
 Only the `module/` directory is shared in order to prevent the guest OS from
 accessing to the `.git/` and `image/` directories.
 
-See [9p QEMU wiki][9p_qemu_wiki], superuser [question 1][virtfs_source_1]
+See [9p wikipedia][], [9p QEMU wiki][], superuser [question 1][virtfs_source_1]
 and [question 2][virtfs_source_2].
 
-[9p_qemu_wiki]: https://wiki.qemu.org/Documentation/9psetup
+[9p wikipedia]: https://en.wikipedia.org/wiki/9P_(protocol)
+[9p QEMU wiki]: https://wiki.qemu.org/Documentation/9psetup
 [virtfs_source_1]: https://superuser.com/questions/628169/how-to-share-a-directory-with-the-host-without-networking-in-qemu
 [virtfs_source_2]: https://superuser.com/questions/1581788/qemu-kvm-creating-file-sharing-between-linux-host-and-macos-guest
 

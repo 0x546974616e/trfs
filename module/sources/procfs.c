@@ -7,6 +7,7 @@
 
 // https://sysprog21.github.io/lkmpg/#the-proc-file-system
 // https://linux-kernel-labs.github.io/refs/heads/master/labs/device_drivers.html
+// https://www.kernel.org/doc/Documentation/filesystems/proc.txt
 
 #define TRFS_PROCFS_BUFFER_SIZE 128u
 #define TRFS_PROCFS_INITIAL "Hello from TRFS!"
@@ -90,6 +91,7 @@ static ssize_t trfs_procfs_write(
     return -EINVAL;
   }
 
+  // TODO: Locks?
   if (copy_from_user(
     trfs_procfs_buffer + *file_offset,
     user_buffer,

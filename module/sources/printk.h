@@ -19,4 +19,15 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ":" __FILE_NAME__ ":" STRINGIFY(__LINE__) ": " fmt
 
+#define trfs_print_info(fmt, ...) \
+  printk(                         \
+    KERN_INFO                     \
+    KBUILD_MODNAME ":"            \
+    __FILE_NAME__ ":"             \
+    "%s:" /* __func__ */          \
+    STRINGIFY(__LINE__) ": " fmt  \
+    , __func__                    \
+    , ##__VA_ARGS__               \
+  )
+
 #endif // TRFS_PRINTK_H

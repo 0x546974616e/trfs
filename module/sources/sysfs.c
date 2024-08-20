@@ -7,6 +7,7 @@
 #include "sysfs.h"
 
 // https://docs.kernel.org/core-api/kobject.html
+// https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
 // https://sysprog21.github.io/lkmpg/#sysfs-interacting-with-your-module
 // https://medium.com/@emanuele.santini.88/sysfs-in-linux-kernel-a-complete-guide-part-1-c3629470fc84
 // https://medium.com/@emanuele.santini.88/a-complete-guide-to-sysfs-part-2-improving-the-attributes-1dbc1fca9b75
@@ -122,6 +123,7 @@ static struct attribute_group const* trfs_sysfs_groups[] = {
   NULL,
 };
 
+// See kset and how it is useful.
 static const struct kobj_type trfs_sysfs_ktype = {
  .default_groups = trfs_sysfs_groups,
  .sysfs_ops = &kobj_sysfs_ops,
