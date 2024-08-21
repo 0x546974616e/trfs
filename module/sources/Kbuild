@@ -1,2 +1,15 @@
-obj-m += trfs.o
-trfs-objs := main.o procfs.o sysfs.o impl.o
+TRFS_SOURCES := $(wildcard $(TRFS_SOURCES_DIR)/**/*.c)
+TRFS_SOURCES := $(patsubst $(TRFS_SOURCES_DIR)/%.c,%.o,$(TRFS_SOURCES))
+# $(error Object files: $(trfs-objs))
+
+obj-m += $(TRFS_MODULE).o
+$(TRFS_MODULE)-objs := main.o $(TRFS_SOURCES)
+
+# EXTRA_CFLAGS is deprecated.
+# Typical scenario in Makefile looks like:
+# 1 | obj-$(CONFIG_FOO) := foo.o
+# 2 | ccflags-$(CONFIG_FOO_DEBUG) := -DFOO_DEBUG
+# Here CONFIG_FOO is a tristate option (y/m/n) whereas CONFIG_FOO_DEBUG is a
+# bool (y/n). Compiler and linker flags are applied unconditionally (built-in/loadable).
+# https://stackoverflow.com/questions/59361420/why-did-not-we-have-ccflags-m-but-ccflags-y
+ccflags-y += -I$(TRFS_SOURCES_DIR)

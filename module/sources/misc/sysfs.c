@@ -3,8 +3,8 @@
 #include <linux/slab.h>
 #include <linux/sysfs.h>
 
-#include "printk.h"
-#include "sysfs.h"
+#include "misc/sysfs.h"
+#include "trfs/printk.h"
 
 // https://docs.kernel.org/core-api/kobject.html
 // https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
@@ -133,7 +133,7 @@ static const struct kobj_type trfs_sysfs_ktype = {
 #define TRFS_SYSFS_NAME "trfs"
 static struct trfs_sysfs_data * trfs_sysfs_data = NULL;
 
-int __init trfs_sysfs_init(void) {
+int trfs_sysfs_init(void) {
   pr_info("TRFS(sysfs) init\n");
 
   // kzalloc() allocates memory and set it with zeros.
@@ -182,7 +182,7 @@ int __init trfs_sysfs_init(void) {
   return 0;
 }
 
-void __exit trfs_sysfs_exit(void) {
+void trfs_sysfs_exit(void) {
   pr_info("TRFS(sysfs) exit\n");
 
   if (trfs_sysfs_data != NULL) {

@@ -36,8 +36,8 @@
 
 #include <linux/fs.h>
 
-#include "impl.h"
-#include "printk.h"
+#include "trfs/impl.h"
+#include "trfs/printk.h"
 
 #define TRFS_IMPL_NAME "trfs"
 
@@ -145,7 +145,7 @@ struct file_system_type trfs_impl_type = {
   .fs_flags = FS_REQUIRES_DEV,
 };
 
-int __init trfs_impl_init(void) {
+int trfs_impl_init(void) {
   pr_info("TRFS(impl) exit\n");
 
   int error = register_filesystem(&trfs_impl_type);
@@ -158,7 +158,7 @@ int __init trfs_impl_init(void) {
   return 0;
 }
 
-void __exit trfs_impl_exit(void) {
+void trfs_impl_exit(void) {
   pr_info("TRFS(impl) exit\n");
 
   int error = unregister_filesystem(&trfs_impl_type);

@@ -3,7 +3,7 @@
 
 #include <linux/init.h>
 
-int __init trfs_procfs_init(void);
-void __exit trfs_procfs_exit(void);
+int trfs_procfs_init(void);
+void trfs_procfs_exit(void);
 
 #endif // TRFS_PROCSFS_H

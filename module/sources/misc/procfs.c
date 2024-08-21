@@ -2,8 +2,8 @@
 #include <linux/proc_fs.h>
 #include <linux/version.h>
 
-#include "printk.h"
-#include "procfs.h"
+#include "misc/procfs.h"
+#include "trfs/printk.h"
 
 // https://sysprog21.github.io/lkmpg/#the-proc-file-system
 // https://linux-kernel-labs.github.io/refs/heads/master/labs/device_drivers.html
@@ -124,7 +124,7 @@ static ssize_t trfs_procfs_write(
 static struct proc_dir_entry* trfs_procfs_entry = NULL;
 static char const* const TRFS_PROCFS_NAME = "trfs";
 
-int __init trfs_procfs_init(void) {
+int trfs_procfs_init(void) {
   pr_info("TRFS(procfs) init\n");
 
   if (trfs_procfs_entry != NULL) {
@@ -142,7 +142,7 @@ int __init trfs_procfs_init(void) {
     return -ENOMEM;
   }
 
-  // Only for educational purposes.
+  // Only for test purposes.
   proc_set_size(trfs_procfs_entry, TRFS_PROCFS_BUFFER_SIZE);
   proc_set_user(trfs_procfs_entry, GLOBAL_ROOT_UID, GLOBAL_ROOT_GID);
 
@@ -150,7 +150,7 @@ int __init trfs_procfs_init(void) {
   return 0;
 }
 
-void __exit trfs_procfs_exit(void) {
+void trfs_procfs_exit(void) {
   pr_info("TRFS(procfs) exit\n");
 
   if (trfs_procfs_entry != NULL) {

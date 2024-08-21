@@ -3,7 +3,7 @@
 
 #include <linux/init.h>
 
-int __init trfs_impl_init(void);
-void __exit trfs_impl_exit(void);
+int trfs_impl_init(void);
+void trfs_impl_exit(void);
 
 #endif // TRFS_IMPL_H

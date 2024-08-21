@@ -1,11 +1,16 @@
 # https://www.kernel.org/doc/html/latest/kbuild/
+# https://docs.kernel.org/bpf/btf.html
 
-KDIR ?= /lib/modules/$(shell uname -r)/build
+TRFS_MODULE = trfs
 
-SOURCESDIR = $(CURDIR)/sources
-BUILDDIR = $(CURDIR)/build
+KBUILD_DIR ?= /lib/modules/$(shell uname -r)/build/
 
-MODULE = trfs
+TRFS_SOURCES_DIR = $(CURDIR)/sources/
+TRFS_BUILD_DIR = $(CURDIR)/build/
+
+export TRFS_MODULE
+export TRFS_SOURCES_DIR # For the Kbuild file
+export KBUILD_VERBOSE := 0
 
 .PHONY: all clean modinfo install uninstall
 
@@ -17,16 +22,16 @@ MODULE = trfs
 # referring to files located in the src tree.
 
 all:
-	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCESDIR) modules
+	make -C $(KBUILD_DIR) M=$(TRFS_BUILD_DIR) src=$(TRFS_SOURCES_DIR) modules
 
 clean:
-	make -C $(KDIR) M=$(BUILDDIR) src=$(SOURCESDIR) clean
+	make -C $(KBUILD_DIR) M=$(TRFS_BUILD_DIR) src=$(TRFS_SOURCES_DIR) clean
 
 modinfo:
-	modinfo $(BUILDDIR)/$(MODULE).ko
+	modinfo $(TRFS_BUILD_DIR)/$(TRFS_MODULE).ko
 
 install:
-	insmod $(BUILDDIR)/$(MODULE).ko
+	insmod $(TRFS_BUILD_DIR)/$(TRFS_MODULE).ko
 
 uninstall:
-	rmmod $(MODULE)
+	rmmod $(TRFS_MODULE)
