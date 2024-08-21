@@ -1,9 +1,10 @@
+#include <linux/init.h>
 #include <linux/module.h>
 
 #include "misc/procfs.h"
 #include "misc/sysfs.h"
-#include "trfs/impl.h"
 #include "trfs/printk.h"
+#include "trfs/register.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Titan 0x546974616e");
@@ -38,12 +39,11 @@ MODULE_DESCRIPTION("A simple file system for educational purposes");
 // https://medium.com/@adityapatnaik27/linux-kernel-module-in-tree-vs-out-of-tree-build-77596fc35891
 // https://stackoverflow.com/questions/8563978/what-is-kernel-section-mismatch
 
-
 static int trfs_init(void) {
   pr_info("TRFS(main) init\n");
 
   int error;
-  if ((error = trfs_impl_init())) goto trfs_cleanup;
+  if ((error = trfs_register())) goto trfs_cleanup;
   if ((error = trfs_procfs_init())) goto procfs_cleanup;
   if ((error = trfs_sysfs_init())) goto sysfs_cleanup;
   return 0; // Success
@@ -51,14 +51,14 @@ static int trfs_init(void) {
   // Expect cleanup functions to be robust.
   sysfs_cleanup: trfs_sysfs_exit();
   procfs_cleanup: trfs_procfs_exit();
-  trfs_cleanup: trfs_impl_exit();
+  trfs_cleanup: trfs_unregister();
   return error;
 }
 
 static void __exit trfs_exit(void) {
   pr_info("TRFS(main) exit\n");
 
-  trfs_impl_exit();
+  trfs_register();
   trfs_procfs_exit();
   trfs_sysfs_exit();
 }

@@ -2,17 +2,15 @@
 # https://docs.kernel.org/bpf/btf.html
 
 TRFS_MODULE = trfs
-
-KBUILD_DIR ?= /lib/modules/$(shell uname -r)/build/
-
 TRFS_SOURCES_DIR = $(CURDIR)/sources/
 TRFS_BUILD_DIR = $(CURDIR)/build/
 
-export TRFS_MODULE
-export TRFS_SOURCES_DIR # For the Kbuild file
-export KBUILD_VERBOSE := 0
+KBUILD_DIR ?= /lib/modules/$(shell uname -r)/build/
 
-.PHONY: all clean modinfo install uninstall
+# For the Kbuild file
+export TRFS_MODULE
+export TRFS_SOURCES_DIR
+export KBUILD_VERBOSE := 0
 
 # M/KBUILD_EXTMOD (https://docs.kernel.org/kbuild/kbuild.html)
 # Set the directory to look for the kernel source when building external modules.
@@ -20,6 +18,8 @@ export KBUILD_VERBOSE := 0
 # src (https://www.kernel.org/doc/html/latest/kbuild/makefiles.html)
 # $(src) is the directory where the Makefile is located. Always use $(src) when
 # referring to files located in the src tree.
+
+.PHONY: all clean modinfo install uninstall
 
 all:
 	make -C $(KBUILD_DIR) M=$(TRFS_BUILD_DIR) src=$(TRFS_SOURCES_DIR) modules
