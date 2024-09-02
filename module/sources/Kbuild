@@ -1,6 +1,7 @@
+# $(PWD) and $(CURDIR) point to the Kbuild directory.
 TRFS_SOURCES := $(wildcard $(TRFS_SOURCES_DIR)/**/*.c)
 TRFS_SOURCES := $(patsubst $(TRFS_SOURCES_DIR)/%.c,%.o,$(TRFS_SOURCES))
-# $(error Object files: $(trfs-objs))
+# $(error Object files: $(TRFS_SOURCES))
 
 obj-m += $(TRFS_MODULE).o
 $(TRFS_MODULE)-objs := main.o $(TRFS_SOURCES)

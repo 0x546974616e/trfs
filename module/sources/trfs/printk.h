@@ -19,15 +19,47 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ":" __FILE_NAME__ ":" STRINGIFY(__LINE__) ": " fmt
 
-#define trfs_print_info(fmt, ...) \
-  printk(                         \
-    KERN_INFO                     \
-    KBUILD_MODNAME ":"            \
-    __FILE_NAME__ ":"             \
-    "%s:" /* __func__ */          \
-    STRINGIFY(__LINE__) ": " fmt  \
-    , __func__                    \
-    , ##__VA_ARGS__               \
+#define TRFS_PRINTK(level, fmt, ...) \
+  printk(                            \
+    level                            \
+    KBUILD_MODNAME ":"               \
+    __FILE_NAME__ ":"                \
+    "%s:" /* __func__ */             \
+    STRINGIFY(__LINE__) ": " fmt     \
+    , __func__                       \
+    , ##__VA_ARGS__                  \
   )
+
+// Print an emergency-level message.
+#define TRFS_EMERG(fmt, ...) \
+  TRFS_PRINTK(KERN_EMERG, fmt, ##__VA_ARGS__)
+
+// Print an alert-level message.
+#define TRFS_ALERT(fmt, ...) \
+  TRFS_PRINTK(KERN_ALERT, fmt, ##__VA_ARGS__)
+
+// Print a critical-level message.
+#define TRFS_CRIT(fmt, ...) \
+  TRFS_PRINTK(KERN_CRIT, fmt, ##__VA_ARGS__)
+
+// Print an error-level message.
+#define TRFS_ERROR(fmt, ...) \
+  TRFS_PRINTK(KERN_ERR, fmt, ##__VA_ARGS__)
+
+// Print a warning-level message.
+#define TRFS_WARN(fmt, ...) \
+  TRFS_PRINTK(KERN_WARNING, fmt, ##__VA_ARGS__)
+
+// Print a notice-level message.
+#define TRFS_NOTICE(fmt, ...) \
+  TRFS_PRINTK(KERN_NOTICE, fmt, ##__VA_ARGS__)
+
+// Print an info-level message.
+#define TRFS_INFO(fmt, ...) \
+  TRFS_PRINTK(KERN_INFO, fmt, ##__VA_ARGS__)
+
+// Continues a previous log message (without '\n') in the same line.
+#define TRFS_CONT(fmt, ...) \
+  TRFS_PRINTK(KERN_CONT, fmt, ##_VA_ARGS__)
 
 #endif // TRFS_PRINTK_H

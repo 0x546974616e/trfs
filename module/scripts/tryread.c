@@ -63,6 +63,7 @@ int main(int const argc, char const* const argv[]) {
       break;
     }
 
+    // Buffer size is block + 1.
     buffer[size] = 0x0;
     buffer[block] = 0x0;
 

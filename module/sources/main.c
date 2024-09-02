@@ -39,8 +39,14 @@ MODULE_DESCRIPTION("A simple file system for educational purposes");
 // https://medium.com/@adityapatnaik27/linux-kernel-module-in-tree-vs-out-of-tree-build-77596fc35891
 // https://stackoverflow.com/questions/8563978/what-is-kernel-section-mismatch
 
+#define TRFS_SEPARATOR "================"
+
+// Temporary log to have a better global view in dmesg.
+#define TRFS_PRINT_INIT() TRFS_INFO(TRFS_SEPARATOR " Init " TRFS_SEPARATOR "\n")
+#define TRFS_PRINT_EXIT() TRFS_INFO(TRFS_SEPARATOR " Exit " TRFS_SEPARATOR "\n")
+
 static int trfs_init(void) {
-  pr_info("TRFS(main) init\n");
+  TRFS_PRINT_INIT();
 
   int error;
   if ((error = trfs_register())) goto trfs_cleanup;
@@ -52,15 +58,17 @@ static int trfs_init(void) {
   sysfs_cleanup: trfs_sysfs_exit();
   procfs_cleanup: trfs_procfs_exit();
   trfs_cleanup: trfs_unregister();
+
+  TRFS_PRINT_EXIT();
   return error;
 }
 
 static void __exit trfs_exit(void) {
-  pr_info("TRFS(main) exit\n");
-
-  trfs_register();
+  trfs_unregister();
   trfs_procfs_exit();
   trfs_sysfs_exit();
+
+  TRFS_PRINT_EXIT();
 }
 
 module_init(trfs_init);

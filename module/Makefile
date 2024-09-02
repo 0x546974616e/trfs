@@ -7,7 +7,7 @@ TRFS_BUILD_DIR = $(CURDIR)/build/
 
 KBUILD_DIR ?= /lib/modules/$(shell uname -r)/build/
 
-# For the Kbuild file
+# For Kbuild files
 export TRFS_MODULE
 export TRFS_SOURCES_DIR
 export KBUILD_VERBOSE := 0
@@ -19,13 +19,16 @@ export KBUILD_VERBOSE := 0
 # $(src) is the directory where the Makefile is located. Always use $(src) when
 # referring to files located in the src tree.
 
-.PHONY: all clean modinfo install uninstall
+.PHONY: all clean dmesg modinfo install uninstall
 
 all:
 	make -C $(KBUILD_DIR) M=$(TRFS_BUILD_DIR) src=$(TRFS_SOURCES_DIR) modules
 
 clean:
 	make -C $(KBUILD_DIR) M=$(TRFS_BUILD_DIR) src=$(TRFS_SOURCES_DIR) clean
+
+dmesg:
+	@dmesg --color=always | grep --color=no $(TRFS_MODULE)
 
 modinfo:
 	modinfo $(TRFS_BUILD_DIR)/$(TRFS_MODULE).ko

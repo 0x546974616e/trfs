@@ -134,15 +134,13 @@ static const struct kobj_type trfs_sysfs_ktype = {
 static struct trfs_sysfs_data * trfs_sysfs_data = NULL;
 
 int trfs_sysfs_init(void) {
-  pr_info("TRFS(sysfs) init\n");
-
   // kzalloc() allocates memory and set it with zeros.
   // GFP stands for "Get Free Page", see documentation below.
   // https://www.kernel.org/doc/html/next/core-api/memory-allocation.html
   trfs_sysfs_data = kzalloc(sizeof(struct trfs_sysfs_data), GFP_KERNEL);
 
   if (trfs_sysfs_data == NULL) {
-    pr_err("Could not allocate TRFS kobject\n");
+    TRFS_ERROR("Could not allocate TRFS kobject\n");
     return -ENOMEM;
   }
 
@@ -167,7 +165,7 @@ int trfs_sysfs_init(void) {
   // https://docs.kernel.org/core-api/kobject.html#creating-simple-kobjects
   // https://github.com/torvalds/linux/blob/master/samples/kobject/kobject-example.c
   if (error) {
-    pr_err("Could not initialize /sys/kernel/%s\n", TRFS_SYSFS_NAME);
+    TRFS_ERROR("Could not initialize /sys/kernel/%s\n", TRFS_SYSFS_NAME);
 
     // https://www.kernel.org/doc/html/latest/driver-api/basics.html
     // According to the documentation, kobject_put() MUST always be called
@@ -178,16 +176,14 @@ int trfs_sysfs_init(void) {
     return -ENOMEM;
   }
 
-  pr_info("/sys/kernel/%s created\n", TRFS_SYSFS_NAME);
+  TRFS_INFO("/sys/kernel/%s created\n", TRFS_SYSFS_NAME);
   return 0;
 }
 
 void trfs_sysfs_exit(void) {
-  pr_info("TRFS(sysfs) exit\n");
-
   if (trfs_sysfs_data != NULL) {
     kobject_put(&trfs_sysfs_data->trfs_kobject);
     kfree(trfs_sysfs_data);
-    pr_info("/sys/kernel/%s removed\n", TRFS_SYSFS_NAME);
+    TRFS_INFO("/sys/kernel/%s removed\n", TRFS_SYSFS_NAME);
   }
 }

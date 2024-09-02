@@ -4,6 +4,15 @@
 #include "trfs/printk.h"
 #include "trfs/super.h"
 
+// The Superblock Object:
+// A superblock object represents a mounted filesystem.
+// https://www.kernel.org/doc/Documentation/filesystems/vfs.txt
+
+// static const struct super_operations trfs_super_operations = {
+//   .statfs = simple_statfs, // Provided by the kernel
+//   .drop_inode = generic_delete_inode, // Provided by the kernel
+// };
+
 int trfs_fill_super_block(
   struct super_block* const super_block,
   void* const data, // Key-value ASCII options?
@@ -14,9 +23,11 @@ int trfs_fill_super_block(
     return -ENOMEM;
   }
 
+  // TODO: What is the size of data block? Do mount_bdev set it correctly?
+
   // S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO
   // https://www.kernel.org/doc/Documentation/filesystems/idmappings.rst
-  // What about nop_mnt_idmap (identity mapping).
+  // What about nop_mnt_idmap (identity mapping)?
   inode_init_owner(super_block->s_user_ns, root_inode, NULL, S_IFDIR | 0755);
 
   root_inode->i_ino = 1;
@@ -45,6 +56,6 @@ void trfs_kill_super_block(
   kill_block_super(super_block);
 
   // So far this function is only here for logging.
-  pr_info("Superblock is destroyed\n");
-  pr_info("Unmount succesful\n");
+  TRFS_INFO("Superblock is destroyed\n");
+  TRFS_INFO("Unmount succesful\n");
 }

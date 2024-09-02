@@ -33,6 +33,8 @@
 // mkdir fafa
 // mount -t type /dev/loop0 fafa
 // ls fafa
+// umont /dev/lopp0
+// losetup --detach /dev/loop0
 
 #include <linux/fs.h>
 
@@ -55,16 +57,16 @@ static struct dentry* trfs_mount(
 
   // root_entry is either a valid pointer or an error code.
   if (unlikely(IS_ERR(root_entry))) {
-    pr_err("Error while mounting %s on %s\n", TRFS_NAME, device_name);
+    TRFS_ERROR("Error while mounting %s on %s\n", TRFS_NAME, device_name);
     return root_entry;
   }
 
-  pr_info("%s is succesfully mounted on %s\n", TRFS_NAME, device_name);
+  TRFS_INFO("%s is succesfully mounted on %s\n", TRFS_NAME, device_name);
   return root_entry;
 }
 
 struct file_system_type trfs_type = {
-  .owner = THIS_MODULE,
+  .owner = THIS_MODULE, // NULL for built-in module?
   .name = TRFS_NAME,
   .mount = trfs_mount,
   .kill_sb = trfs_kill_super_block,
@@ -72,25 +74,21 @@ struct file_system_type trfs_type = {
 };
 
 int trfs_register(void) {
-  pr_info("TRFS register\n");
-
   int error = register_filesystem(&trfs_type);
   if (unlikely(error)) {
-    pr_err("Failed to register %s\n", TRFS_NAME);
+    TRFS_ERROR("Failed to register %s\n", TRFS_NAME);
     return error;
   }
 
-  pr_info("Sucessfully registered %s\n", TRFS_NAME);
+  TRFS_INFO("Sucessfully registered %s\n", TRFS_NAME);
   return 0;
 }
 
 void trfs_unregister(void) {
-  pr_info("TRFS unregister\n");
-
   int error = unregister_filesystem(&trfs_type);
   if (unlikely(error)) {
-    pr_err("Failed to unregister %s (error: [%d])\n", TRFS_NAME, error);
+    TRFS_ERROR("Failed to unregister %s (error: [%d])\n", TRFS_NAME, error);
   }
 
-  pr_info("Sucessfully unregistered %s\n", TRFS_NAME);
+  TRFS_INFO("Sucessfully unregistered %s\n", TRFS_NAME);
 }

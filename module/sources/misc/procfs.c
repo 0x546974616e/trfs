@@ -125,8 +125,6 @@ static struct proc_dir_entry* trfs_procfs_entry = NULL;
 static char const* const TRFS_PROCFS_NAME = "trfs";
 
 int trfs_procfs_init(void) {
-  pr_info("TRFS(procfs) init\n");
-
   if (trfs_procfs_entry != NULL) {
     // Should not happen.
     return 0;
@@ -138,7 +136,7 @@ int trfs_procfs_init(void) {
   );
 
   if (trfs_procfs_entry == NULL) {
-    pr_err("Could not initialize /proc/%s\n", TRFS_PROCFS_NAME);
+    TRFS_ERROR("Could not initialize /proc/%s\n", TRFS_PROCFS_NAME);
     return -ENOMEM;
   }
 
@@ -146,15 +144,13 @@ int trfs_procfs_init(void) {
   proc_set_size(trfs_procfs_entry, TRFS_PROCFS_BUFFER_SIZE);
   proc_set_user(trfs_procfs_entry, GLOBAL_ROOT_UID, GLOBAL_ROOT_GID);
 
-  pr_info("/proc/%s created\n", TRFS_PROCFS_NAME);
+  TRFS_INFO("/proc/%s created\n", TRFS_PROCFS_NAME);
   return 0;
 }
 
 void trfs_procfs_exit(void) {
-  pr_info("TRFS(procfs) exit\n");
-
   if (trfs_procfs_entry != NULL) {
     proc_remove(trfs_procfs_entry);
-    pr_info("/proc/%s removed\n", TRFS_PROCFS_NAME);
+    TRFS_INFO("/proc/%s removed\n", TRFS_PROCFS_NAME);
   }
 }
