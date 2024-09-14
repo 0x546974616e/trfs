@@ -13,4 +13,4 @@ $(TRFS_MODULE)-objs := main.o $(TRFS_SOURCES)
 # Here CONFIG_FOO is a tristate option (y/m/n) whereas CONFIG_FOO_DEBUG is a
 # bool (y/n). Compiler and linker flags are applied unconditionally (built-in/loadable).
 # https://stackoverflow.com/questions/59361420/why-did-not-we-have-ccflags-m-but-ccflags-y
-ccflags-y += -I$(TRFS_SOURCES_DIR)
+ccflags-y += -iquote $(TRFS_SOURCES_DIR)

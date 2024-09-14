@@ -1,0 +1,35 @@
+# :set noexpandtab
+
+include globals.make
+
+MKFS_BIN = $(TRFS_BUILD_DIR)/mkfs.$(TRFS_MODULE)
+MKFS_SOURCE = $(TRFS_SOURCES_DIR)/mkfs.c
+MKFS_DEPENDENCY = $(TRFS_BUILD_DIR)/mkfs.d
+
+CC = gcc
+
+# -ansi
+CFLAGS = \
+	-Wall \
+	-Wextra \
+	-Wconversion \
+	-Werror \
+	-pedantic \
+  -iquote $(TRFS_SOURCES_DIR) \
+	-isystem /usr/include/
+
+CDEPS = -MMD -MP -MT $< -MF $(@:.c=.d)
+
+.PHONY : all clean
+
+all: $(MKFS_BIN)
+	@echo ./$(patsubst $(CURDIR)/%,%,$<)
+
+$(MKFS_BIN) : $(MKFS_SOURCE)
+	@echo Generating $(notdir $@)...
+	@$(CC) $< -o $@ $(CFLAGS) $(CDEPS)
+
+-include $(MKFS_DEPENDENCY)
+
+clean:
+	@rm -f $(MKFS_DEPENDENCY) $(MKFS_BIN)

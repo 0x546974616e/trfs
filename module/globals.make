@@ -1,0 +1,3 @@
+TRFS_MODULE = trfs
+TRFS_SOURCES_DIR = $(CURDIR)/sources/
+TRFS_BUILD_DIR = $(CURDIR)/build/

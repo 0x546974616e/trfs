@@ -1,10 +1,15 @@
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/version.h>
 
 #include "misc/procfs.h"
 #include "misc/sysfs.h"
 #include "trfs/printk.h"
 #include "trfs/register.h"
+
+#if 6 != LINUX_VERSION_MAJOR && 1 != LINUX_VERSION_PATCHLEVEL
+  #error TRFS has only been tested on Linux version 6.1.0.
+#endif
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Titan 0x546974616e");

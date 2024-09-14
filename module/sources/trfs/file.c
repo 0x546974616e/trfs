@@ -80,6 +80,9 @@ trfs_file_release(
   return 0;
 }
 
+/**
+ *
+ */
 static int
 trfs_directory_iterate(
   struct file* const file,

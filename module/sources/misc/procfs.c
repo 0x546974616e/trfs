@@ -107,7 +107,7 @@ static ssize_t trfs_procfs_write(
   return actual_length;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
   // Prior to Linux 5.6 a file_operations is needed.
   static struct proc_ops trfs_procfs_fops = {
     .proc_read = trfs_procfs_read,

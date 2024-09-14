@@ -10,6 +10,8 @@
 #define STRINGIFY_HELPER(x) #x
 #define STRINGIFY(x) STRINGIFY_HELPER(x)
 
+#define TRFS_SUCCESS 0 // TODO: Move
+
 // __FILE_NAME__ is not standard.
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 // https://gcc.gnu.org/onlinedocs/cpp/Standard-Predefined-Macros.html
@@ -60,6 +62,6 @@
 
 // Continues a previous log message (without '\n') in the same line.
 #define TRFS_CONT(fmt, ...) \
-  TRFS_PRINTK(KERN_CONT, fmt, ##_VA_ARGS__)
+  printk(KERN_CONT fmt, ##__VA_ARGS__)
 
 #endif // TRFS_PRINTK_H
