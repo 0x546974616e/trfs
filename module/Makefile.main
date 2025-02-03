@@ -26,7 +26,7 @@ clean:
 	make -C $(KBUILD_DIR) M=$(TRFS_BUILD_DIR) src=$(TRFS_SOURCES_DIR) clean
 
 dmesg:
-	@dmesg --color=always | grep --color=no $(TRFS_MODULE)
+	@dmesg --color=always | grep --color=no -Pzo '.+$(TRFS_MODULE).+(\n\s+.+)*' | tr '\0' '\n'
 
 modinfo:
 	modinfo $(TRFS_BUILD_DIR)/$(TRFS_MODULE).ko

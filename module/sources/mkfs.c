@@ -82,7 +82,7 @@ static void mkfs_usage(
     "Options:" LFLF
     "  -b, --block-size [BYTES]" LF
     "    File system's block size." LFLF
-    "  -s, --blocks [N]" LF
+    "  -n, --blocks [N]" LF
     "    Number of blocks." LFLF
     "  -v, --verbose" LF
     "    Produce verbose ouput." LFLF
@@ -127,7 +127,7 @@ static uint32_t mkfs_parse_number(char const* const string) {
       case 'G': number *= 1024u * 1024u * 1024u; break;
       default: {
         MKFS_WARNING(
-          "Unrecognized character \'%c\' for \"%s\".",
+          "Unexpected character \'%c\' for \"%s\".",
           *character, string
         );
       };
@@ -156,12 +156,12 @@ static bool parse_mkfs_options(
     { "help", no_argument, NULL, 'h' },
     { "verbose", no_argument, NULL, 'v' },
     { "block-size", required_argument, NULL, 'b' },
-    { "blocks", required_argument, NULL, 's' },
+    { "blocks", required_argument, NULL, 'n' },
     { NULL, 0, NULL, 0 },
   };
 
   while (option >= 0) {
-    option = getopt_long(argc, argv, "hvb:s:", options, NULL);
+    option = getopt_long(argc, argv, "hvb:n:", options, NULL);
 
     if (option <= -1) {
       break;
@@ -187,7 +187,7 @@ static bool parse_mkfs_options(
       }
 
       // Blocks.
-      case 's': {
+      case 'n': {
         mkfs_options->blocks = mkfs_parse_number(optarg);
         break;
       }
@@ -201,11 +201,13 @@ static bool parse_mkfs_options(
 
       case ':': {
         // Should not happen.
+        MKFS_ERROR("Unknown option '%c', abort.", optopt);
         return false;
       }
 
       default: {
         // Should not happen.
+        MKFS_ERROR("Unknown option '%c', abort.", option);
         return false;
       }
     }
@@ -229,8 +231,8 @@ static bool parse_mkfs_options(
 /// (Note that zero is not considered a power of two.)
 ///
 static inline bool is_power_of_2(uint32_t n) {
-  // #include <linux/log2.h>
   // https://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
+  // Also defined in #include <linux/log2.h>
   return (n != 0 && ((n & (n - 1)) == 0));
 }
 
@@ -305,23 +307,32 @@ static bool check_mkfs_options(
     case S_IFBLK: {
       // Device block size.
       // [/usr/include/linux/fs.h]:
-      //   #define BLKPBSZGET _IO(0x12, 123)
-      // [linux/source/block/ioctl.c]:
-      //  case BLKPBSZGET: /* get block device physical block size */
-      //    return put_uint(argp, bdev_physical_block_size(bdev));
-      unsigned int local_block_size;
-      if (ioctl(fd, BLKPBSZGET, &local_block_size) <= -1) {
-        perror("Error ioctl(BLKPBSZGET)");
+      // [source/include/uapi/linux/fs.h]:
+      //   /* get block device sector size */
+      //   #define BLKSSZGET _IO(0x12,104)
+      // [source/block/ioctl.c]:
+      //   case BLKSSZGET: /* get block device logical block size */
+      //     return put_int(argp, bdev_logical_block_size(bdev));
+      // [source/include/linux/blkdev.h]:
+      //   unsigned int bdev_logical_block_size(...) { ... };
+      unsigned int logical_block_size;
+      // BLKPBSZGET for physical block size.
+      if (ioctl(fd, BLKSSZGET, &logical_block_size) <= -1) {
+        perror("Error ioctl(BLKSSZGET)");
         goto close_fd;
       }
 
       // Safe copy.
-      device_block_size = local_block_size;
+      device_block_size = logical_block_size;
 
       // Device size.
       // [/usr/include/linux/fs.h]:
+      // [source/include/uapi/linux/fs.h]:
       //   /* return device size in bytes (u64 *arg) */
       //   #define BLKGETSIZE64 _IOR(0x12, 114, size_t)
+      // [source/block/ioctl.c]:
+      //   case BLKGETSIZE64:
+      //     return put_u64(argp, bdev_nr_bytes(bdev));
       if (ioctl(fd, BLKGETSIZE64, &device_size) <= -1) {
         perror("Error ioctl(BLKGETSIZE64)");
         goto close_fd;
@@ -336,7 +347,7 @@ static bool check_mkfs_options(
     }
   }
 
-  // 2. Check block size.
+  // 2. Check block size (see sb_set_blocksize() and set_blocksize()).
   if (options->block_size < 512) {
     MKFS_ERROR(
       "Block size (%u) cannot be smaller than 512 bytes.",
@@ -381,7 +392,7 @@ static bool check_mkfs_options(
     goto close_fd;
   }
 
-  if (checked_multiplication(options->blocks, options->block_size) >= device_size) {
+  if (checked_multiplication(options->blocks, options->block_size) > device_size) {
     MKFS_ERROR(
       "Total number of blocks (%u x %u) exceeds the device size (%lu).",
       options->blocks, options->block_size, device_size
@@ -489,6 +500,8 @@ static bool make_file_system(
     .blocks = htobe32(options->blocks),
   };
 
+  MKFS_INFO("Writing filesystem...");
+
   if (options->verbose) {
     printf(
       LF "Superblock:" LF
@@ -507,7 +520,7 @@ static bool make_file_system(
     // As the block size is configurable, the superblock will have to be found
     // between 512 and PAGE_SIZE bytes. To avoid false positives when searching
     // for the magic number, we explicitly reset it on potential locations.
-    uint8_t magic_number[TRFS_MAGIC_NUMBER_LENGTH] = "Continue";
+    uint8_t magic_number[TRFS_MAGIC_NUMBER_LENGTH] = { 0x0u, };
     bool success = seek_and_write(
       options, device,
       &magic_number, sizeof(magic_number),
@@ -529,6 +542,9 @@ static bool make_file_system(
   if (!success) {
     return false;
   }
+
+  // 3. Write inodes.
+  // TODO
 
   MKFS_INFO("Done.");
 

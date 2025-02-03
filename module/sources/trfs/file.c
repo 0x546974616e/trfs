@@ -16,6 +16,12 @@ trfs_inode_lookup(
 ) {
   // inode->i_op
   // https://www.kernel.org/doc/Documentation/filesystems/vfs.txt
+
+  // Example: resolving "/dir/subdir/file" will produce the following calls
+  //   - dir_dentry = lookup(root_dentry, "dir")
+  //   - subdir_dentry = lookup(dir_dentry, "subdir")
+  //   - file_dentry = lookup(subdir_dentry, "file")
+
   TRFS_INFO("Inode lookup\n");
   return NULL;
 }

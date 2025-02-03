@@ -55,37 +55,30 @@ int trfs_save_super_block(
   return 0;
 }
 
-int trfs_set_block_size(
-  struct super_block* const super_block,
-  int size
-) {
-  // Size must be a power of two, and between 512 and PAGE_SIZE.
-  if (size > PAGE_SIZE || size < 512 || !is_power_of_2(size)) {
-    return -EINVAL;
-  }
-
-  // Size cannot be smaller than the size supported by the device.
-  if (size < bdev_logical_block_size(super_block->s_bdev)) {
-    return -EINVAL;
-  }
-
-  if (!sb_set_blocksize(super_block, size)) {
-    return -EINVAL;
-  }
-
-  return 0;
-}
-
 ///
 /// Finds the superblock and configures the device block size accordingly.
 ///
+/// ```txt
+///                                     PAGE_SIZE
+/// 0   512  1024      2048                4096
+/// +----+----+----+----+----+----+----+----+----+--- // -+
+/// |    |SB| |SB|      |SB|                |SB|          |
+/// +----+----+----+----+----+----+----+----+----+--- // -+
+///      ^    ^         ^                   ^
+///          Potential superblock locations
+/// ```
+///
 /// @pre super_block != NULL
+/// @post On success, sb_set_blocksize() is set.
+/// @post On success, super_block->s_fs_info != NULL
+/// @post On failure, super_block->s_fs_info == NULL
 ///
 static int trfs_find_super_block(
   struct super_block* const super_block
 ) {
   int retcode = TRFS_SUCCESS;
   struct buffer_head* buffer_head = NULL;
+  super_block->s_fs_info = NULL;
 
   // Should already be PAGE_SIZE by default?
   if (!sb_set_blocksize(super_block, PAGE_SIZE)) {
@@ -128,6 +121,7 @@ static int trfs_find_super_block(
     }
   }
 
+  // Redundant comparison if block_size < PAGE_SIZE, but easier to read.
   disk_info = (struct trfs_super_block_info*) (buffer_head->b_data + block_size);
   if (0 == strncmp(disk_info->magic_number, TRFS_MAGIC_NUMBER, TRFS_MAGIC_NUMBER_LENGTH)) {
     // kzalloc() allocates memory and set it with zeros.
@@ -147,12 +141,20 @@ static int trfs_find_super_block(
     alloc_info->blocks = be32_to_cpu(disk_info->blocks);
     super_block->s_fs_info = alloc_info;
 
-    TRFS_INFO("Block size: %u\n", alloc_info->block_size);
-    TRFS_INFO("Number of blocks: %u\n", alloc_info->blocks);
+    TRFS_INFO(
+      "Superblock:\n"
+      "\tMagic number: %*s\n"
+      "\tBlock size: %u\n"
+      "\tNumber of blocks: %u\n"
+      , TRFS_MAGIC_NUMBER_LENGTH
+      , alloc_info->magic_number
+      , alloc_info->block_size
+      , alloc_info->blocks
+    );
 
     // "No-op" if the block size is the same.
     if (!sb_set_blocksize(super_block, alloc_info->block_size)) {
-      TRFS_ERROR("Unable to set device block size to page size (%u).\n", alloc_info->block_size);
+      TRFS_ERROR("Unable to set device block size to %u.\n", alloc_info->block_size);
       retcode = -EINVAL;
       goto cleanup;
     }
@@ -167,14 +169,42 @@ cleanup:
     brelse(buffer_head);
   }
 
-  if (retcode) {
-    // Explicitly set as NULL for trfs_kill_super_block().
-    super_block->s_fs_info = NULL;
+  if (retcode != TRFS_SUCCESS) {
+    // Release superblock info on error.
+    if (super_block->s_fs_info != NULL) {
+      kfree(super_block->s_fs_info);
+      super_block->s_fs_info = NULL;
+    }
   }
 
   return retcode;
 }
 
+///
+/// Returns the magic number as an `unsigned long` (see `struct super_block`).
+///
+unsigned long trfs_get_magic_number(void) {
+  // The compiler should warn if string size is too long.
+  char magic_number[sizeof(unsigned long)] = TRFS_MAGIC_NUMBER;
+  return be64_to_cpu(*(unsigned long*) magic_number);
+}
+
+///
+/// mount_bdev() callback.
+///
+/// Initializes the superblock (root inode and root dentry) and device block size.
+///
+/// @pre super_block != NULL
+///
+/// @post On success:
+///   - super_block->s_fs_info != NULL
+///   - super_block->s_root != NULL (dentry)
+///   - Device block size is set accordingly
+///
+/// @post On failure:
+///   - super_block->s_fs_info == NULL
+///   - super_block->s_root == NULL
+///
 int trfs_fill_super_block(
   struct super_block* const super_block,
   void* const data, // Key-value ASCII options?
@@ -191,16 +221,14 @@ int trfs_fill_super_block(
     return error;
   }
 
-  // sb->s_magic = AUFS_MAGIC_NUMBER;
-  // sb->s_op = &aufs_super_ops;
+  // super_block->s_op = ...;
+  super_block->s_magic = trfs_get_magic_number();
 
   struct inode* const root_inode = new_inode(super_block);
   if (!root_inode) {
     TRFS_ERROR("Could not create the root inode.");
     return -ENOMEM;
   }
-
-  // TODO: What is the size of data block? Do mount_bdev set it correctly?
 
   // ╦┌┬┐┌┬┐┌─┐┌─┐
   // ║ │││││├─┤├─┘
@@ -224,7 +252,7 @@ int trfs_fill_super_block(
   // Owning user namespace and default context in which to interpret filesystem
   // uids, gids, quotas, device nodes, xattrs and security labels.
 
-  // S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO
+  // 0777 = S_IRWXU | S_IRWXG | S_IRWXO
   inode_init_owner(super_block->s_user_ns, root_inode, NULL, S_IFDIR | 0755);
 
   // ╦┌┐┌┌─┐┌┬┐┌─┐
@@ -254,7 +282,6 @@ int trfs_fill_super_block(
 
   super_block->s_root = d_make_root(root_inode);
   if (!super_block->s_root) {
-
     // d_make_root() already calls iput(root_inode), what happens when you call
     // iput() twice on an already released inode, does the kernel prevent this?
 
@@ -265,11 +292,18 @@ int trfs_fill_super_block(
   return 0;
 }
 
+///
+/// Releases all superblock data/metadata.
+///
+/// @pre super_block != NULL
+/// @post super_block->s_fs_info is freed
+/// @post super_block->s_fs_info == NULL
+///
 void trfs_kill_super_block(
   struct super_block* const super_block
 ) {
   if (super_block->s_fs_info != NULL) {
-    TRFS_INFO("Superblock info are released.\n");
+    TRFS_INFO("Superblock info released.\n");
     kfree(super_block->s_fs_info);
   }
 
